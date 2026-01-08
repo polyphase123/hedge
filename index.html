@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philippine Electricity Market Analyst | 2026 Outlook</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM (Specific Versions) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Prop-types (Required dependency for Recharts UMD) -->
+    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+    
+    <!-- Recharts (Specific Version compatible with React 18) -->
+    <script src="https://unpkg.com/recharts@2.12.0/umd/Recharts.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        // Access Recharts from window object to ensure it's loaded
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ReferenceLine } = window.Recharts;
+
+        // --- Data & Constants from PDF ---
+        const MARKET_CONSTANTS = {
+            primaryCap: 32000,
+            floorPrice: -10000,
+            oldCPT: 9000,
+            newCPT: 12413,
+            oldSPC: 6245,
+            newSPC: 7423,
+        };
+
+        const NAV_ITEMS = [
+            { id: 'dashboard', label: 'Executive Summary', icon: 'LayoutDashboard' },
+            { id: 'governance', label: 'Institutional Framework', icon: 'Landmark' },
+            { id: 'wesm', label: 'WESM Price Simulator', icon: 'Activity' },
+            { id: 'retail', label: 'Retail Eligibility', icon: 'Users' },
+            { id: 'analytics', label: 'Market Data', icon: 'BarChart3' },
+        ];
+
+        // --- Icons Component Helper ---
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size, display: 'inline-block' }}></i>;
+        };
+
+        // --- Components ---
+
+        // 1. Dashboard Component
+        const Dashboard = ({ onNavigate }) => (
+            <div className="space-y-6 animate-fade-in">
+                <header className="mb-8">
+                    <h1 className="text-3xl font-bold text-slate-800">Philippine Electricity Market 2026</h1>
+                    <p className="text-slate-500 mt-2">Comprehensive Analysis of Operations, Price Mitigation & Retail Reforms</p>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-3 mb-4 text-blue-600">
+                            <Icon name="TrendingUp" />
+                            <h3 className="font-semibold">WESM Maturation</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                            Transition from low-price focus to <strong>sustainable pricing</strong>. 
+                            2025 reforms raised the Secondary Price Cap to <strong>PHP 7,423/MWh</strong> to preserve investment signals for peaking plants.
+                        </p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-3 mb-4 text-emerald-600">
+                            <Icon name="ShieldCheck" />
+                            <h3 className="font-semibold">Retail Reforms (Omnibus)</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                            <strong>ERC Resolution No. 13 (2024)</strong> mandates hedging for Retail Suppliers (RES). 
+                            Focus on financial resilience to prevent "fly-by-night" suppliers and protect consumers from spot volatility.
+                        </p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-3 mb-4 text-amber-600">
+                            <Icon name="AlertTriangle" />
+                            <h3 className="font-semibold">Risk Management</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">
+                            New paradigm: <strong>Risk Transfer</strong>. Volatility risk is moved from consumers to suppliers via fixed contracts. 
+                            Suppliers must now prove financial capability (P15M Net Worth).
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-slate-900 text-white p-8 rounded-2xl mt-8 relative overflow-hidden">
+                    <div className="relative z-10">
+                        <h2 className="text-2xl font-bold mb-4">Explore the Interactive Modules</h2>
+                        <p className="text-slate-300 max-w-2xl mb-6">
+                            Use the sidebar to simulate WESM price spikes, check your eligibility for Retail Competition (RCOA), or analyze the separation of powers between ERC-MOS and IEMOP.
+                        </p>
+                        <button 
+                            onClick={() => onNavigate('wesm')}
+                            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                        >
+                            Launch WESM Simulator <Icon name="ArrowRight" size={16} />
+                        </button>
+                    </div>
+                    <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-blue-900 to-transparent opacity-50"></div>
+                </div>
+            </div>
+        );
+
+        // 2. Governance Component
+        const Governance = () => {
+            const [activeRole, setActiveRole] = useState('mos');
+
+            return (
+                <div className="animate-fade-in">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-6">Institutional Framework</h2>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Interactive Diagram */}
+                        <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center min-h-[400px]">
+                            <div className="relative w-full max-w-md">
+                                {/* MOS Node */}
+                                <div 
+                                    className={`cursor-pointer p-6 rounded-xl border-2 transition-all duration-300 absolute top-0 left-1/2 transform -translate-x-1/2 w-64 text-center z-20 ${activeRole === 'mos' ? 'bg-blue-50 border-blue-500 shadow-md scale-105' : 'bg-white border-slate-200 hover:border-blue-300'}`}
+                                    onClick={() => setActiveRole('mos')}
+                                >
+                                    <h3 className="font-bold text-lg text-slate-800">ERC - MOS</h3>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider mt-1">Regulator (Police Power)</p>
+                                </div>
+
+                                {/* Connection Line */}
+                                <div className="absolute top-24 left-1/2 w-0.5 h-24 bg-slate-300 transform -translate-x-1/2 -z-0"></div>
+
+                                {/* IEMOP Node */}
+                                <div 
+                                    className={`cursor-pointer p-6 rounded-xl border-2 transition-all duration-300 absolute top-48 left-1/2 transform -translate-x-1/2 w-64 text-center z-20 ${activeRole === 'iemop' ? 'bg-emerald-50 border-emerald-500 shadow-md scale-105' : 'bg-white border-slate-200 hover:border-emerald-300'}`}
+                                    onClick={() => setActiveRole('iemop')}
+                                >
+                                    <h3 className="font-bold text-lg text-slate-800">IEMOP</h3>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider mt-1">Market Operator</p>
+                                </div>
+                            </div>
+                            <p className="mt-80 text-sm text-slate-400 italic text-center w-full">Click on the boxes above to explore mandates</p>
+                        </div>
+
+                        {/* Details Panel */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            {activeRole === 'mos' ? (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                                        <div className="p-3 bg-blue-100 text-blue-600 rounded-lg"><Icon name="Scale" /></div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-slate-800">Market Operations Service (MOS)</h3>
+                                            <p className="text-slate-500 text-sm">The "Watchdog" & Architect</p>
+                                        </div>
+                                    </div>
+                                    <ul className="space-y-3 mt-4">
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="Eye" className="text-blue-500 shrink-0" />
+                                            <span><strong>Surveillance:</strong> Monitors indices (RSI, Pivotality) to detect market power abuse.</span>
+                                        </li>
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="FileText" className="text-blue-500 shrink-0" />
+                                            <span><strong>Rule Formulation:</strong> Drafts PDM and Price Cap policies (like the 2025 SPC adjustment).</span>
+                                        </li>
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="Siren" className="text-blue-500 shrink-0" />
+                                            <span><strong>Enforcement:</strong> Investigates "Must Offer Rule" breaches and imposes penalties.</span>
+                                        </li>
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="Shield" className="text-blue-500 shrink-0" />
+                                            <span><strong>Retail Oversight:</strong> Licenses RES and validates their financial hedging.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                                        <div className="p-3 bg-emerald-100 text-emerald-600 rounded-lg"><Icon name="Cpu" /></div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-slate-800">IEMOP</h3>
+                                            <p className="text-slate-500 text-sm">Independent Market Operator</p>
+                                        </div>
+                                    </div>
+                                    <ul className="space-y-3 mt-4">
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="Zap" className="text-emerald-500 shrink-0" />
+                                            <span><strong>Dispatch:</strong> Runs the optimization engine to match supply and demand.</span>
+                                        </li>
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="Banknote" className="text-emerald-500 shrink-0" />
+                                            <span><strong>Settlements:</strong> Calculates bills and manages payments between generators and utilities.</span>
+                                        </li>
+                                        <li className="flex gap-3 text-slate-700 text-sm">
+                                            <Icon name="Database" className="text-emerald-500 shrink-0" />
+                                            <span><strong>Registry:</strong> Acts as the Central Registration Body for RCOA/Retail participants.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 3. WESM Simulator Component
+        const WESMSimulator = () => {
+            // Simulate 5 intervals (simplification of 72 hours)
+            const [prices, setPrices] = useState([4000, 5000, 6000, 8000, 15000]);
+            const [spcActive, setSpcActive] = useState(false);
+            
+            const rollingAvg = useMemo(() => {
+                const sum = prices.reduce((a, b) => a + b, 0);
+                return sum / prices.length;
+            }, [prices]);
+
+            useEffect(() => {
+                setSpcActive(rollingAvg >= MARKET_CONSTANTS.newCPT);
+            }, [rollingAvg]);
+
+            const handlePriceChange = (index, value) => {
+                const newPrices = [...prices];
+                newPrices[index] = Number(value);
+                setPrices(newPrices);
+            };
+
+            const chartData = prices.map((p, i) => ({
+                name: `Interval ${i+1}`,
+                Price: p,
+                CappedPrice: spcActive ? MARKET_CONSTANTS.newSPC : p,
+                Trigger: MARKET_CONSTANTS.newCPT
+            }));
+
+            return (
+                <div className="animate-fade-in space-y-6">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <h2 className="text-2xl font-bold text-slate-800">WESM Price Simulator (2025 Rules)</h2>
+                            <p className="text-slate-500 text-sm mt-1">Adjust the sliders to see how the Secondary Price Cap (SPC) triggers.</p>
+                        </div>
+                        <div className={`px-4 py-2 rounded-lg font-bold ${spcActive ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-emerald-100 text-emerald-600 border border-emerald-200'}`}>
+                            Status: {spcActive ? 'SPC TRIGGERED (Capped)' : 'MARKET NORMAL'}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Controls */}
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 className="font-semibold mb-4 text-slate-700">Market Price Inputs (PHP/MWh)</h3>
+                            <div className="space-y-6">
+                                {prices.map((price, idx) => (
+                                    <div key={idx} className="space-y-2">
+                                        <div className="flex justify-between text-xs text-slate-500">
+                                            <span>Interval {idx + 1}</span>
+                                            <span className="font-mono">{price.toLocaleString()}</span>
+                                        </div>
+                                        <input 
+                                            type="range" 
+                                            min="0" 
+                                            max="32000" 
+                                            step="500"
+                                            value={price} 
+                                            onChange={(e) => handlePriceChange(idx, e.target.value)}
+                                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 pt-6 border-t border-slate-100">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm text-slate-600">Rolling Average:</span>
+                                    <span className={`font-bold font-mono ${spcActive ? 'text-red-500' : 'text-slate-800'}`}>
+                                        {rollingAvg.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-slate-600">Threshold (CPT):</span>
+                                    <span className="font-mono text-slate-500">{MARKET_CONSTANTS.newCPT.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Chart */}
+                        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200 min-h-[400px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis domain={[0, 35000]} />
+                                    <Tooltip 
+                                        formatter={(value) => `₱${value.toLocaleString()}`}
+                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                    />
+                                    <Legend />
+                                    <ReferenceLine y={MARKET_CONSTANTS.newCPT} label="CPT Threshold" stroke="red" strokeDasharray="3 3" />
+                                    <ReferenceLine y={MARKET_CONSTANTS.newSPC} label="SPC Cap" stroke="#f59e0b" strokeDasharray="3 3" />
+                                    <Line type="monotone" dataKey="Price" stroke="#94a3b8" strokeWidth={2} name="Raw Market Price" dot={{r: 4}} />
+                                    <Line type="step" dataKey="CappedPrice" stroke={spcActive ? "#ef4444" : "#10b981"} strokeWidth={3} name="Clearing Price" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800 flex gap-3">
+                        <Icon name="Info" className="shrink-0" />
+                        <p>
+                            <strong>Insight:</strong> When the rolling average exceeds the <strong>Cumulative Price Threshold (PHP 12,413)</strong>, the market enters a mitigated state. 
+                            Prices are automatically capped at <strong>PHP 7,423</strong> (Yellow Line) until the average drops. This prevents sustained price shocks while allowing short spikes for peaking plants.
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Retail Calculator Component
+        const RetailCalculator = () => {
+            const [demand, setDemand] = useState(0);
+            const [isContiguous, setIsContiguous] = useState(false);
+            const [greenPref, setGreenPref] = useState(false);
+
+            const getResult = () => {
+                if (demand >= 500) {
+                    return {
+                        program: 'RCOA (Retail Competition)',
+                        color: 'bg-blue-100 text-blue-700',
+                        desc: 'You are a Contestable Customer. You can leave your DU and contract directly with any RES.'
+                    };
+                }
+                if (demand >= 100 && greenPref) {
+                    return {
+                        program: 'GEOP (Green Energy Option)',
+                        color: 'bg-emerald-100 text-emerald-700',
+                        desc: 'You qualify for the Green Energy Option Program. You can source 100% renewable energy.'
+                    };
+                }
+                if (isContiguous && demand < 500) {
+                    return {
+                        program: 'RAP (Retail Aggregation)',
+                        color: 'bg-purple-100 text-purple-700',
+                        desc: 'You do not meet the individual threshold, but if you pool with neighbors in your contiguous area to reach 500kW, you can join RAP.'
+                    };
+                }
+                return {
+                    program: 'Captive Market',
+                    color: 'bg-slate-100 text-slate-700',
+                    desc: 'You currently remain with your Distribution Utility (e.g., Meralco) at regulated rates.'
+                };
+            };
+
+            const result = getResult();
+
+            return (
+                <div className="animate-fade-in max-w-4xl mx-auto">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-6">Retail Market Eligibility Checker</h2>
+                    
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Average Peak Demand (kW)</label>
+                                    <input 
+                                        type="number" 
+                                        value={demand} 
+                                        onChange={(e) => setDemand(Number(e.target.value))}
+                                        className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="e.g. 350"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">Check your electricity bill for "Registered Demand".</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={isContiguous} 
+                                            onChange={(e) => setIsContiguous(e.target.checked)}
+                                            className="w-5 h-5 text-blue-600 rounded"
+                                        />
+                                        <span className="text-sm text-slate-700">Located in a contiguous area (Subdivision/Ecozone)?</span>
+                                    </label>
+
+                                    <label className="flex items-center gap-3 p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={greenPref} 
+                                            onChange={(e) => setGreenPref(e.target.checked)}
+                                            className="w-5 h-5 text-green-600 rounded"
+                                        />
+                                        <span className="text-sm text-slate-700">Preference for 100% Renewable Energy?</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col justify-center">
+                                <div className={`p-6 rounded-xl ${result.color} transition-all duration-300`}>
+                                    <h3 className="text-lg font-bold mb-2 uppercase tracking-wide">Eligibility Result</h3>
+                                    <div className="text-3xl font-bold mb-3">{result.program}</div>
+                                    <p className="text-sm opacity-90">{result.desc}</p>
+                                </div>
+                                <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-100 text-xs text-amber-800">
+                                    <strong>Note on Hedging:</strong> Under Omnibus Rules (2024), if you switch to a RES, your supplier is mandated to hedge their supply. This means you will likely be offered a <strong>Fixed Rate</strong> contract rather than a pass-through rate.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 5. Analytics Component
+        const Analytics = () => {
+            const data = [
+                { name: 'Secondary Cap', old: MARKET_CONSTANTS.oldSPC, new: MARKET_CONSTANTS.newSPC },
+                { name: 'CPT Threshold', old: MARKET_CONSTANTS.oldCPT, new: MARKET_CONSTANTS.newCPT },
+            ];
+
+            return (
+                <div className="animate-fade-in space-y-8">
+                    <h2 className="text-2xl font-bold text-slate-800">Market Data & Evolution</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 className="font-semibold mb-6 text-slate-700 text-center">Price Mitigation Evolution (2014 vs 2025)</h3>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip cursor={{fill: 'transparent'}} />
+                                    <Legend />
+                                    <Bar dataKey="old" name="Old Value (2014-2024)" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="new" name="New Value (2025+)" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 className="font-semibold mb-4 text-slate-700">Key Regional Disparities (Dec 2025)</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                    <span className="font-medium text-slate-700">Luzon</span>
+                                    <div className="text-right">
+                                        <div className="text-sm font-bold text-green-600">Surplus</div>
+                                        <div className="text-xs text-slate-500">~₱2.98/kWh</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-red-400">
+                                    <span className="font-medium text-slate-700">Visayas</span>
+                                    <div className="text-right">
+                                        <div className="text-sm font-bold text-red-600">Deficit</div>
+                                        <div className="text-xs text-slate-500">~₱7.22/kWh (SPC Triggered)</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border-l-4 border-red-400">
+                                    <span className="font-medium text-slate-700">Mindanao</span>
+                                    <div className="text-right">
+                                        <div className="text-sm font-bold text-red-600">Forced Outages</div>
+                                        <div className="text-xs text-slate-500">~₱7.82/kWh (SPC Triggered)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App Layout ---
+        const App = () => {
+            const [view, setView] = useState('dashboard');
+
+            const renderView = () => {
+                switch(view) {
+                    case 'dashboard': return <Dashboard onNavigate={setView} />;
+                    case 'governance': return <Governance />;
+                    case 'wesm': return <WESMSimulator />;
+                    case 'retail': return <RetailCalculator />;
+                    case 'analytics': return <Analytics />;
+                    default: return <Dashboard onNavigate={setView} />;
+                }
+            };
+
+            return (
+                <div className="flex min-h-screen">
+                    {/* Sidebar */}
+                    <aside className="w-20 md:w-64 bg-slate-900 text-white fixed h-full z-50 flex flex-col transition-all duration-300">
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-center md:justify-start gap-3">
+                            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-lg">E</div>
+                            <span className="font-bold text-lg hidden md:block">EnergyAnalyst</span>
+                        </div>
+                        
+                        <nav className="flex-1 py-6 px-3 space-y-2">
+                            {NAV_ITEMS.map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setView(item.id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${view === item.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <Icon name={item.icon} size={20} />
+                                    <span className="hidden md:block text-sm font-medium">{item.label}</span>
+                                </button>
+                            ))}
+                        </nav>
+
+                        <div className="p-4 border-t border-slate-800 hidden md:block">
+                            <div className="bg-slate-800 rounded-lg p-3">
+                                <p className="text-xs text-slate-400 mb-1">Data Source</p>
+                                <p className="text-xs font-semibold text-slate-200 truncate">PowerPoint on Market Risk Hedging.pdf</p>
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Main Content */}
+                    <main className="flex-1 ml-20 md:ml-64 p-8">
+                        {renderView()}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
